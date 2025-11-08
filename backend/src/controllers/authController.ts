@@ -3,7 +3,6 @@ import User, { type IUser } from "../model/userModel.js";
 import bcrypt from "bcrypt";
 import genreateToken from "../utils/genrateToken.js";
 import { setAuthCookie } from "../utils/setAuthCookies.js";
-import { resend, sender } from "../config/resend.js";
 import { sendWelcomeEmail } from "../emails/emailHandler.js";
 
 export const signup = async (req: Request, res: Response) => {
@@ -67,11 +66,76 @@ export const signup = async (req: Request, res: Response) => {
       },
     });
 
+    //  -------------  sending a welcome email ------------
     try {
       await sendWelcomeEmail(newUser.email, newUser.userName);
     } catch (error) {
       console.log("Failed to send welcome email");
     }
+  } catch (error) {
+    res.status(500).json({
+      message: "Something went wrong",
+      error: (error as Error).message,
+    });
+  }
+};
+
+//  --------------- endpoint for login -----
+
+export const login = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || typeof email !== "string") {
+      return res.status(400).json({ message: "Email is Required" });
+    }
+
+    if (!password || typeof password !== "string") {
+      return res.status(400).json({ message: "Password is Required" });
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (!existingUser) {
+      return res.status(400).json({ message: "Invalid Credentials" });
+    }
+
+    const isValidPassword = await bcrypt.compare(
+      password,
+      existingUser.password
+    );
+    if (!isValidPassword) {
+      return res.status(400).json({ message: "Invalid Credentials" });
+    }
+
+    const token = genreateToken(existingUser.id);
+    setAuthCookie(token, res);
+
+    res.status(200).json({
+      message: "Logged In Successflly",
+      user: {
+        id: existingUser._id,
+        userName: existingUser.userName,
+        email: existingUser.email,
+        profilePic: existingUser.profilePic,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Something went wrong",
+      error: (error as Error).message,
+    });
+  }
+};
+
+export const logout = (req: Request, res: Response) => {
+  try {
+    res.clearCookie("token", {
+      httpOnly: true,
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+    });
+
+    res.status(200).json({ message: "Logged Out successfully" });
   } catch (error) {
     res.status(500).json({
       message: "Something went wrong",
