@@ -2,13 +2,19 @@ import express from "express";
 import dotevn from "dotenv";
 import connectDb from "./config/db.js";
 dotevn.config();
+import authRoutes from "./routes/authRoutes.js"
 
 const app = express();
 
 // ---------- middlewars --------------
 app.use(express.json());
 
-const port = process.env.PORT;
+const port = process.env.PORT; 
+
+
+// routes
+
+app.use("/auth", authRoutes)
 
 // ----- db connection--------------
 
