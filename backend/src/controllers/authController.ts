@@ -172,7 +172,7 @@ export const updateProfile = async (
       id,
       { profilePic: uploadResponse.secure_url },
       { new: true }
-    );
+    ).select("-password");
 
     res.status(200).json({ message: "Uploaded Profile Image", profile });
   } catch (error) {
