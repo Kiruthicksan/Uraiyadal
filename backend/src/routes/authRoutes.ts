@@ -6,11 +6,14 @@ import {
   updateProfile,
 } from "../controllers/authController.js";
 import protect, { type AuthenticatedRequest } from "../middlewares/protect.js";
+import { arcjetProtection } from "../middlewares/arcjetMiddleWare.js";
 
 const router = express.Router();
 
+router.use(arcjetProtection)
+
 router.post("/signup", signup);
-router.post("/login", login);
+router.post("/login", arcjetProtection, login);
 router.post("/logout", logout);
 router.put("/update-profile", protect as any, updateProfile as any);
 router.get("/check", protect as any, (req, res) => {
