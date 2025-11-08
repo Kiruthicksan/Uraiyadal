@@ -3,6 +3,8 @@ import User, { type IUser } from "../model/userModel.js";
 import bcrypt from "bcrypt";
 import genreateToken from "../utils/genrateToken.js";
 import { setAuthCookie } from "../utils/setAuthCookies.js";
+import { resend, sender } from "../config/resend.js";
+import { sendWelcomeEmail } from "../emails/emailHandler.js";
 
 export const signup = async (req: Request, res: Response) => {
   try {
@@ -64,6 +66,12 @@ export const signup = async (req: Request, res: Response) => {
         profilePic: newUser.profilePic,
       },
     });
+
+    try {
+      await sendWelcomeEmail(newUser.email, newUser.userName);
+    } catch (error) {
+      console.log("Failed to send welcome email");
+    }
   } catch (error) {
     res.status(500).json({
       message: "Something went wrong",
@@ -71,5 +79,3 @@ export const signup = async (req: Request, res: Response) => {
     });
   }
 };
-
-
