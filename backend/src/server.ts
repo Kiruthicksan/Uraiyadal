@@ -3,11 +3,13 @@ import dotevn from "dotenv";
 import connectDb from "./config/db.js";
 dotevn.config();
 import authRoutes from "./routes/authRoutes.js"
+import cookieparser from "cookie-parser"
 
 const app = express();
 
 // ---------- middlewars --------------
 app.use(express.json());
+app.use(cookieparser())
 
 const port = process.env.PORT; 
 

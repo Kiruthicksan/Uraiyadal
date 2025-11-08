@@ -4,6 +4,8 @@ import bcrypt from "bcrypt";
 import genreateToken from "../utils/genrateToken.js";
 import { setAuthCookie } from "../utils/setAuthCookies.js";
 import { sendWelcomeEmail } from "../emails/emailHandler.js";
+import type { AuthenticatedRequest } from "../middlewares/protect.js";
+import cloudinary from "../config/cloudinary.js";
 
 export const signup = async (req: Request, res: Response) => {
   try {
@@ -127,6 +129,8 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
+//  --------- endpoint for logging out  ----------------
+
 export const logout = (req: Request, res: Response) => {
   try {
     res.clearCookie("token", {
@@ -143,3 +147,41 @@ export const logout = (req: Request, res: Response) => {
     });
   }
 };
+
+// ------------ endopoint for uploding image -------------------
+export const updateProfile = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  try {
+    const { profilePic } = req.body;
+
+    if (!profilePic) {
+      return res.status(400).json({ message: "Profile Pic is needed" });
+    }
+
+    const id = req.user._id;
+
+    if (!id) {
+      return res.status(404).json({ message: "Id not found" });
+    }
+
+    const uploadResponse = await cloudinary.uploader.upload(profilePic);
+
+    const profile = await User.findByIdAndUpdate(
+      id,
+      { profilePic: uploadResponse.secure_url },
+      { new: true }
+    );
+
+    res.status(200).json({ message: "Uploaded Profile Image", profile });
+  } catch (error) {
+    res.status(500).json({
+      message: "Something went wrong",
+      error: (error as Error).message,
+    });
+  }
+};
+
+
+
