@@ -57,9 +57,9 @@ export const getChatPartners = async (
       _id: { $in: uniquePartners },
     }).select("-password");
 
-    res.status(200).json({chatPatners})
+    res.status(200).json({ chatPatners });
   } catch (error) {
-     res.status(500).json({
+    res.status(500).json({
       message: "Something Went wrong",
       error: (error as Error).message,
     });
@@ -98,6 +98,21 @@ export const sendMessage = async (req: AuthenticatedRequest, res: Response) => {
     const { text, image } = req.body;
     const { id: receiverId } = req.params;
     const senderId = req.user.id;
+
+    if (!text && !image) {
+      return res.status(400).json({ message: "Text or image is required" });
+    }
+
+    if (senderId.equals(receiverId)) {
+      return res
+        .status(400)
+        .json({ message: "Cannot send message to yourself" });
+    }
+
+    const receiverExist = await User.exists({ _id: receiverId });
+    if (!receiverExist) {
+      return res.status(404).json({ message: "Receiver not found" });
+    }
 
     let imageUrl;
 

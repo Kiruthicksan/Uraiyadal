@@ -1,6 +1,5 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
 
-
 export interface Imessage extends Document {
   senderId: Types.ObjectId;
   receiverId: Types.ObjectId;
@@ -22,6 +21,8 @@ const messageSchema = new Schema<Imessage>(
     },
     text: {
       type: String,
+      trim: true,
+      maxLength: 2000,
     },
     image: {
       type: String,
