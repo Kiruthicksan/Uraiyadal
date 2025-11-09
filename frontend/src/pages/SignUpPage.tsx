@@ -8,7 +8,7 @@ import {
   UserIcon,
 } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import signup from "../assets/signup.png";
 
 export interface FormDataType {
