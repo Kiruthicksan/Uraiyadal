@@ -1,8 +1,8 @@
 import { create } from "zustand";
 import { api } from "../services/api";
 import type { FormDataType } from "../pages/SignUpPage";
-import { data } from "react-router-dom";
 import toast from "react-hot-toast";
+import type { LoginFormData } from "../pages/LoginPage";
 
 interface user {
   _id: string;
@@ -16,6 +16,8 @@ interface useAuthStoreType {
   isLoading: boolean;
   isAuthenticated: () => Promise<void>;
   signUp: (formData: FormDataType) => Promise<void>;
+  logIn: (formData: LoginFormData) => Promise<void>;
+  logOut: () => Promise<void>;
 }
 
 export const useAuthStore = create<useAuthStoreType>((set) => ({
@@ -40,6 +42,38 @@ export const useAuthStore = create<useAuthStoreType>((set) => ({
       const { data } = await api.post("/auth/signup", formData);
       set({ user: data.user });
       toast.success("Account created Sucessfully");
+    } catch (error: any) {
+      console.error(error);
+      const errorMessage =
+        error.response.data.message || error.message || "Something went wrong";
+      toast.error(errorMessage);
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  logIn: async (formData) => {
+    try {
+      set({ isLoading: true });
+      const { data } = await api.post("/auth/login", formData);
+      set({ user: data.user });
+      toast.success("LoggedIn Sucessfully");
+    } catch (error: any) {
+      console.error(error);
+      const errorMessage =
+        error.response.data.message || error.message || "Something went wrong";
+      toast.error(errorMessage);
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  logOut: async () => {
+    try {
+      set({ isLoading: true });
+      await api.post("/auth/logout", {});
+      set({ user: null });
+      toast.success("Logged out Successfully");
     } catch (error: any) {
       console.error(error);
       const errorMessage =
