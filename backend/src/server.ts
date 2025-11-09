@@ -3,6 +3,7 @@ import dotevn from "dotenv";
 import connectDb from "./config/db.js";
 dotevn.config();
 import authRoutes from "./routes/authRoutes.js"
+import messageRoutes from "./routes/messageRoutes.js"
 import cookieparser from "cookie-parser"
 
 const app = express();
@@ -17,6 +18,7 @@ const port = process.env.PORT;
 // routes
 
 app.use("/auth", authRoutes)
+app.use("/", messageRoutes)
 
 // ----- db connection--------------
 
