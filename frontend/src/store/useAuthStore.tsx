@@ -8,6 +8,7 @@ interface user {
   _id: string;
   userName: string;
   email: string;
+  profilePic: null;
 }
 
 interface useAuthStoreType {
@@ -18,6 +19,7 @@ interface useAuthStoreType {
   signUp: (formData: FormDataType) => Promise<void>;
   logIn: (formData: LoginFormData) => Promise<void>;
   logOut: () => Promise<void>;
+  updateProfile: ({ profilePic }: { profilePic: string }) => Promise<void>;
 }
 
 export const useAuthStore = create<useAuthStoreType>((set) => ({
@@ -27,7 +29,7 @@ export const useAuthStore = create<useAuthStoreType>((set) => ({
   isAuthenticated: async () => {
     try {
       const { data } = await api.get("/auth/check");
-      set({ user: data });
+      set({ user: data.user });
     } catch (error) {
       console.error("Error", error);
       set({ user: null });
@@ -81,6 +83,22 @@ export const useAuthStore = create<useAuthStoreType>((set) => ({
       toast.error(errorMessage);
     } finally {
       set({ isLoading: false });
+    }
+  },
+
+  updateProfile: async (profilePic) => {
+    try {
+      set({ isLoading: true });
+      const { data } = await api.put("/auth/update-profile", profilePic);
+      set({ user: data.profile });
+      toast.success("Profile updated Successfully");
+    } catch (error: any) {
+      console.log("Error in update profile", error);
+      const errorMessage =
+        error.response.data.message || error.message || "Something went wrong";
+      toast.error(errorMessage);
+    }finally{
+       set({ isLoading: false })
     }
   },
 }));
