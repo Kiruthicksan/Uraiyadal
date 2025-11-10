@@ -14,6 +14,8 @@ export const getAllContacts = async (
     const contacts = await User.find({ _id: { $ne: loggedInUserId } }).select(
       "-password"
     );
+
+   
     res
       .status(200)
       .json({ message: "Contacts fetched Successfully", contacts });
