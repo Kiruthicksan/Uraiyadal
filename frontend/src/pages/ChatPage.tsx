@@ -5,7 +5,7 @@ import ChatList from "../components/ChatList";
 import ContactList from "../components/ContactList";
 import NoConversationPlaceholder from "../components/NoConversationPlaceholder";
 import ProfileHeader from "../components/ProfileHeader";
-import { useAuthStore } from "../store/useAuthStore";
+
 import { useChatStore } from "../store/useChatStore";
 
 const ChatPage = () => {
