@@ -1,12 +1,12 @@
 import { create } from "zustand";
 import { api } from "../services/api";
 import toast from "react-hot-toast";
-
+import { ChessKing } from "lucide-react";
 
 export interface chatType {
   _id: string;
-  profilePic : string,
-  userName : string
+  profilePic: string;
+  userName: string;
 }
 
 export interface MessageType {
@@ -18,8 +18,14 @@ export interface MessageType {
   createdAt: string;
 }
 
+export interface AllContactsType {
+  _id: string;
+  profilePic: string;
+  userName: string;
+}
+
 export interface useChatStoreType {
-  allContacts: string[] | null;
+  allContacts: AllContactsType[] | null;
   chats: chatType[] | null;
   messages: MessageType[];
   activeTab: "chats" | "contacts";
@@ -58,8 +64,9 @@ export const useChatStore = create<useChatStoreType>((set, get) => ({
   getAllContacts: async () => {
     try {
       set({ loading: true });
-      const { data } = await api.get("/contacts", {});
+      const { data } = await api.get("/contacts");
       set({ allContacts: data.contacts });
+     
     } catch (error: any) {
       const errorMessage =
         error.response.data.message || error.message || "Something went wrong";
@@ -84,6 +91,4 @@ export const useChatStore = create<useChatStoreType>((set, get) => ({
       set({ loading: false });
     }
   },
-
-  
 }));
