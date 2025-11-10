@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { api } from "../services/api";
 import toast from "react-hot-toast";
-import { ChessKing } from "lucide-react";
 
 export interface chatType {
   _id: string;
