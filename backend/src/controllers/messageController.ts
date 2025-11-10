@@ -49,15 +49,15 @@ export const getChatPartners = async (
 
     // ------- remove duplicates------
 
-    const uniquePartners = [...new Set(partnerIds.map((id) => id.toString))];
+    const uniquePartners = [...new Set(partnerIds.map((id) => id.toString()))];
 
     // --------get user info---------------------
 
-    const chatPatners = await User.find({
+    const chatPartners = await User.find({
       _id: { $in: uniquePartners },
     }).select("-password");
 
-    res.status(200).json({ chatPatners });
+    res.status(200).json({ chatPartners });
   } catch (error) {
     res.status(500).json({
       message: "Something Went wrong",
