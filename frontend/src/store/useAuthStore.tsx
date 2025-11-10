@@ -4,7 +4,7 @@ import type { FormDataType } from "../pages/SignUpPage";
 import toast from "react-hot-toast";
 import type { LoginFormData } from "../pages/LoginPage";
 
-interface user {
+export interface user {
   _id: string;
   userName: string;
   email: string;

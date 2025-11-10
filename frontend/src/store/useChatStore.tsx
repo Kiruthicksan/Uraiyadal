@@ -2,9 +2,11 @@ import { create } from "zustand";
 import { api } from "../services/api";
 import toast from "react-hot-toast";
 
+
 export interface chatType {
   _id: string;
-  userId: string;
+  profilePic : string,
+  userName : string
 }
 
 export interface MessageType {
@@ -62,7 +64,7 @@ export const useChatStore = create<useChatStoreType>((set, get) => ({
       const errorMessage =
         error.response.data.message || error.message || "Something went wrong";
       toast.error(errorMessage);
-      set({ allContacts: null });
+      set({ allContacts: [] });
     } finally {
       set({ loading: false });
     }
@@ -72,12 +74,12 @@ export const useChatStore = create<useChatStoreType>((set, get) => ({
     try {
       set({ loading: true });
       const { data } = await api.get("/chats", {});
-      set({ chats: data.chatPatners });
+      set({ chats: data.chatPartners });
     } catch (error: any) {
       const errorMessage =
         error.response.data.message || error.message || "Something went wrong";
       toast.error(errorMessage);
-      set({ chats: null });
+      set({ chats: [] });
     } finally {
       set({ loading: false });
     }
