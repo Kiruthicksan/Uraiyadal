@@ -30,12 +30,15 @@ export interface useChatStoreType {
   activeTab: "chats" | "contacts";
   selectedUser: chatType | null;
   loading: boolean;
+  loadingChatsPartners: boolean;
+  loadingContacts: boolean;
   isSoundEnabled: boolean;
   toggleButton: () => void;
   setActiveTab: (tab: "chats" | "contacts") => void;
-  setSelectedUser: (selectedUser: chatType) => void;
+  setSelectedUser: (selectedUser: chatType | null) => void;
   getAllContacts: () => Promise<void>;
   getMyChatPartners: () => Promise<void>;
+  getMessagesByUserId: (userId: string) => Promise<void>;
 }
 
 export const useChatStore = create<useChatStoreType>((set, get) => ({
@@ -45,6 +48,8 @@ export const useChatStore = create<useChatStoreType>((set, get) => ({
   activeTab: "chats",
   selectedUser: null,
   loading: false,
+  loadingContacts: false,
+  loadingChatsPartners: false,
   isSoundEnabled: localStorage.getItem("isSoundEnabled") === "true",
 
   toggleButton: () => {
@@ -62,23 +67,22 @@ export const useChatStore = create<useChatStoreType>((set, get) => ({
 
   getAllContacts: async () => {
     try {
-      set({ loading: true });
+      set({ loadingContacts: true });
       const { data } = await api.get("/contacts");
       set({ allContacts: data.contacts });
-     
     } catch (error: any) {
       const errorMessage =
         error.response.data.message || error.message || "Something went wrong";
       toast.error(errorMessage);
       set({ allContacts: [] });
     } finally {
-      set({ loading: false });
+      set({ loadingContacts: false });
     }
   },
 
   getMyChatPartners: async () => {
     try {
-      set({ loading: true });
+      set({ loadingChatsPartners: true });
       const { data } = await api.get("/chats", {});
       set({ chats: data.chatPartners });
     } catch (error: any) {
@@ -86,6 +90,21 @@ export const useChatStore = create<useChatStoreType>((set, get) => ({
         error.response.data.message || error.message || "Something went wrong";
       toast.error(errorMessage);
       set({ chats: [] });
+    } finally {
+      set({ loadingChatsPartners: false });
+    }
+  },
+
+  getMessagesByUserId: async (userId) => {
+    try {
+      set({ loading: true });
+      const { data } = await api.get(`/${userId}`);
+      set({ messages: data.message });
+    } catch (error: any) {
+      const errorMessage =
+        error.response.data.message || error.message || "Something went wrong";
+      toast.error(errorMessage);
+      set({ messages: [] });
     } finally {
       set({ loading: false });
     }

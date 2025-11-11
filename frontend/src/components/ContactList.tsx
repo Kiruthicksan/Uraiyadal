@@ -2,16 +2,21 @@ import { useEffect } from "react";
 import { useChatStore } from "../store/useChatStore";
 import UsersLoadingSkeleton from "./UsersLoadingSkeloton";
 import avatar from "../assets/avatar.png";
+import { useUpperCase } from "../hooks/useUpperCase";
 
 const ChatList = () => {
-  const { getAllContacts, loading, allContacts, setSelectedUser } =
+  const { getAllContacts, loadingContacts, allContacts, setSelectedUser } =
     useChatStore();
 
   useEffect(() => {
     getAllContacts();
   }, [getAllContacts]);
 
-  if (loading) return <UsersLoadingSkeleton />;
+  if (loadingContacts) return <UsersLoadingSkeleton />;
+
+ 
+
+
 
   return (
     <>
@@ -31,7 +36,7 @@ const ChatList = () => {
               </div>
             </div>
             <h4 className="text-slate-200 font-medium truncate">
-              {contact.userName.charAt(0).toUpperCase() + contact.userName.slice(1).toLowerCase()}
+              {useUpperCase(contact.userName)}
             </h4>
           </div>
         </div>

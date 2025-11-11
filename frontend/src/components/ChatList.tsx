@@ -3,15 +3,20 @@ import { useChatStore } from "../store/useChatStore";
 import UsersLoadingSkeleton from "./UsersLoadingSkeloton";
 import NoChatsFound from "./NoChatsFound";
 import avatar from "../assets/avatar.png";
+import { useUpperCase } from "../hooks/useUpperCase";
 
 const ChatList = () => {
-  const { chats, getMyChatPartners, loading, setSelectedUser } = useChatStore();
+  // global states ----
+  const { chats, getMyChatPartners, loadingChatsPartners, setSelectedUser } =
+    useChatStore();
+
+  // -- custom --hooks
 
   useEffect(() => {
     getMyChatPartners();
   }, [getMyChatPartners]);
 
-  if (loading) return <UsersLoadingSkeleton />;
+  if (loadingChatsPartners) return <UsersLoadingSkeleton />;
   if (chats?.length === 0) return <NoChatsFound />;
   return (
     <>
@@ -28,7 +33,7 @@ const ChatList = () => {
               </div>
             </div>
             <h4 className="text-slate-200 font-medium truncate">
-              {chat.userName}
+              {useUpperCase(chat.userName)}
             </h4>
           </div>
         </div>
