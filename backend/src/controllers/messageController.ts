@@ -77,14 +77,14 @@ export const getMessagesByUserId = async (
     const userId = req.user._id;
     const { id } = req.params;
 
-    const message = await Message.find({
+    const messages = await Message.find({
       $or: [
         { senderId: userId, receiverId: id },
         { senderId: id, receiverId: userId },
       ],
     });
 
-    res.status(200).json(message);
+    res.status(200).json(messages);
   } catch (error) {
     res.status(500).json({
       message: "Something Went wrong",
@@ -99,7 +99,7 @@ export const sendMessage = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { text, image } = req.body;
     const { id: receiverId } = req.params;
-    const senderId = req.user.id;
+    const senderId = req.user._id;
 
     if (!text && !image) {
       return res.status(400).json({ message: "Text or image is required" });
@@ -130,7 +130,7 @@ export const sendMessage = async (req: AuthenticatedRequest, res: Response) => {
       image: imageUrl,
     });
 
-    res.status(201).json({ message: "Message sended.", newMessage });
+    res.status(201).json(newMessage);
   } catch (error) {
     res.status(500).json({
       message: "Something Went wrong",
