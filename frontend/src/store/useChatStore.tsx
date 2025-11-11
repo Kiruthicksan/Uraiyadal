@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { api } from "../services/api";
 import toast from "react-hot-toast";
+import { useAuthStore } from "./useAuthStore";
 
 export interface chatType {
   _id: string;
@@ -13,14 +14,20 @@ export interface MessageType {
   senderId: string;
   receiverId: string;
   text?: string;
-  image?: string;
+  image?: string | null;
   createdAt: string;
+  isOptimistic: boolean;
 }
 
 export interface AllContactsType {
   _id: string;
   profilePic: string;
   userName: string;
+}
+
+export interface sendMesssagePayLoadType {
+  text: string;
+  image?: string | null;
 }
 
 export interface useChatStoreType {
@@ -32,6 +39,7 @@ export interface useChatStoreType {
   loading: boolean;
   loadingChatsPartners: boolean;
   loadingContacts: boolean;
+  loadingMessages: boolean;
   isSoundEnabled: boolean;
   toggleButton: () => void;
   setActiveTab: (tab: "chats" | "contacts") => void;
@@ -39,6 +47,7 @@ export interface useChatStoreType {
   getAllContacts: () => Promise<void>;
   getMyChatPartners: () => Promise<void>;
   getMessagesByUserId: (userId: string) => Promise<void>;
+  sendMessage: (messageData: sendMesssagePayLoadType) => Promise<void>;
 }
 
 export const useChatStore = create<useChatStoreType>((set, get) => ({
@@ -50,6 +59,7 @@ export const useChatStore = create<useChatStoreType>((set, get) => ({
   loading: false,
   loadingContacts: false,
   loadingChatsPartners: false,
+  loadingMessages: false,
   isSoundEnabled: localStorage.getItem("isSoundEnabled") === "true",
 
   toggleButton: () => {
@@ -97,7 +107,7 @@ export const useChatStore = create<useChatStoreType>((set, get) => ({
 
   getMessagesByUserId: async (userId) => {
     try {
-      set({ loading: true });
+      set({ loadingMessages: true });
       const { data } = await api.get(`/${userId}`);
       set({ messages: data });
     } catch (error: any) {
@@ -106,7 +116,51 @@ export const useChatStore = create<useChatStoreType>((set, get) => ({
       toast.error(errorMessage);
       set({ messages: [] });
     } finally {
-      set({ loading: false });
+      set({ loadingMessages: false });
     }
   },
+
+   sendMessage: async (messageData) => {
+  const { selectedUser } = get();
+  const { user } = useAuthStore.getState();
+
+  if (!user?._id || !selectedUser?._id) return;
+
+  const tempId = `temp-${Date.now()}`;
+
+  // Create optimistic message
+  const optimisticMessage = {
+    _id: tempId,
+    senderId: user._id,
+    receiverId: selectedUser._id,
+    text: messageData.text,
+    image: messageData.image,
+    createdAt: new Date().toISOString(),
+    isOptimistic: true,
+  };
+
+  // Instantly show it in UI
+  set((state) => ({
+    messages: [...state.messages, optimisticMessage],
+  }));
+
+  try {
+    const res = await api.post(`/send/${selectedUser._id}`, messageData);
+
+    // Replace optimistic message with real one
+    set((state) => ({
+      messages: state.messages.map((msg) =>
+        msg._id === tempId ? res.data : msg
+      ),
+    }));
+  } catch (error: any) {
+    // Remove optimistic message on failure
+    set((state) => ({
+      messages: state.messages.filter((msg) => msg._id !== tempId),
+    }));
+
+    toast.error(error.response?.data?.message || "Something went wrong");
+  }
+},
+
 }));
