@@ -6,8 +6,7 @@ import authRoutes from "./routes/authRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
 import cookieparser from "cookie-parser";
 import cors from "cors";
-
-const app = express();
+import { app, server } from "./utils/socket.js";
 
 // ---------- middlewars --------------
 
@@ -29,7 +28,7 @@ const startServer = async () => {
   try {
     await connectDb();
 
-    app.listen(port, () =>
+    server.listen(port, () =>
       console.log(`Server Running on http://localhost:${port}`)
     );
   } catch (error) {

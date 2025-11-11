@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import User from "../model/userModel.js";
 
-interface JwtPayloadType extends JwtPayload {
+ export interface JwtPayloadType extends JwtPayload {
   userId: string;
 }
 
