@@ -99,7 +99,7 @@ export const useChatStore = create<useChatStoreType>((set, get) => ({
     try {
       set({ loading: true });
       const { data } = await api.get(`/${userId}`);
-      set({ messages: data.message });
+      set({ messages: data });
     } catch (error: any) {
       const errorMessage =
         error.response.data.message || error.message || "Something went wrong";
