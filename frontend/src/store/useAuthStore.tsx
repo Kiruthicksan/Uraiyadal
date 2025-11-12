@@ -5,7 +5,6 @@ import toast from "react-hot-toast";
 import type { LoginFormData } from "../pages/LoginPage";
 import { io } from "socket.io-client";
 
-
 export interface user {
   _id: string;
   userName: string;
@@ -120,7 +119,10 @@ export const useAuthStore = create<useAuthStoreType>((set, get) => ({
 
     const BASE_URL = import.meta.env.VITE_URL;
 
-    const socket = io(BASE_URL, { withCredentials: true });
+    const socket = io(BASE_URL, {
+      withCredentials: true,
+      transports: ["websocket"],
+    });
     socket.connect();
 
     set({ socket });
