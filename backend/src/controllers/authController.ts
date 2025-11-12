@@ -135,7 +135,7 @@ export const logout = (req: Request, res: Response) => {
   try {
     res.clearCookie("token", {
       httpOnly: true,
-      sameSite: "strict",
+      sameSite: "none",
       secure: true,
     });
 
