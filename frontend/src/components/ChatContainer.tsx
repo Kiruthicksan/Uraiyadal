@@ -10,19 +10,35 @@ import MessagesLoadingSkeleton from "./MessagesLoadingSkeleton";
 const ChatContainer = () => {
   // --- global store
 
-  const { selectedUser, getMessagesByUserId, messages, loadingMessages } =
-    useChatStore();
+  const {
+    selectedUser,
+    getMessagesByUserId,
+    messages,
+    loadingMessages,
+    subscribeToMessages,
+    unsubscribeFromMessages,
+  } = useChatStore();
   const { user } = useAuthStore();
-  const messageEndRef = useRef<HTMLDivElement | null>(null)
+  const messageEndRef = useRef<HTMLDivElement | null>(null);
   // custom hook --
 
   const captilizedUserName = useUpperCase(selectedUser?.userName as string);
 
   useEffect(() => {
     getMessagesByUserId(selectedUser?._id!);
-  }, [getMessagesByUserId, selectedUser]);
+    subscribeToMessages();
 
-    useEffect(() => {
+    // clean up --
+
+    return () => unsubscribeFromMessages();
+  }, [
+    getMessagesByUserId,
+    selectedUser,
+    subscribeToMessages,
+    unsubscribeFromMessages,
+  ]);
+
+  useEffect(() => {
     if (messageEndRef.current) {
       messageEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
@@ -75,7 +91,6 @@ const ChatContainer = () => {
         )}
       </div>
       <MessageInput />
-    
     </>
   );
 };

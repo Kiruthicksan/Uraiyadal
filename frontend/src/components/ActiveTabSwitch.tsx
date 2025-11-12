@@ -23,7 +23,7 @@ const ActiveTabSwitch = () => {
             : "text-slate-400"
         }`}
       >
-        Contacts
+        Community
       </button>
     </div>
   );

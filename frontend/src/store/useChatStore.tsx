@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { api } from "../services/api";
 import toast from "react-hot-toast";
 import { useAuthStore } from "./useAuthStore";
+import notification from "../assets/sound/notification.mp3";
 
 export interface chatType {
   _id: string;
@@ -48,6 +49,8 @@ export interface useChatStoreType {
   getMyChatPartners: () => Promise<void>;
   getMessagesByUserId: (userId: string) => Promise<void>;
   sendMessage: (messageData: sendMesssagePayLoadType) => Promise<void>;
+  subscribeToMessages: () => void;
+  unsubscribeFromMessages: () => void;
 }
 
 export const useChatStore = create<useChatStoreType>((set, get) => ({
@@ -120,47 +123,76 @@ export const useChatStore = create<useChatStoreType>((set, get) => ({
     }
   },
 
-   sendMessage: async (messageData) => {
-  const { selectedUser } = get();
-  const { user } = useAuthStore.getState();
+  sendMessage: async (messageData) => {
+    const { selectedUser } = get();
+    const { user } = useAuthStore.getState();
 
-  if (!user?._id || !selectedUser?._id) return;
+    if (!user?._id || !selectedUser?._id) return;
 
-  const tempId = `temp-${Date.now()}`;
+    const tempId = `temp-${Date.now()}`;
 
-  // Create optimistic message
-  const optimisticMessage = {
-    _id: tempId,
-    senderId: user._id,
-    receiverId: selectedUser._id,
-    text: messageData.text,
-    image: messageData.image,
-    createdAt: new Date().toISOString(),
-    isOptimistic: true,
-  };
+    // Create optimistic message
+    const optimisticMessage = {
+      _id: tempId,
+      senderId: user._id,
+      receiverId: selectedUser._id,
+      text: messageData.text,
+      image: messageData.image,
+      createdAt: new Date().toISOString(),
+      isOptimistic: true,
+    };
 
-  // Instantly show it in UI
-  set((state) => ({
-    messages: [...state.messages, optimisticMessage],
-  }));
-
-  try {
-    const res = await api.post(`/send/${selectedUser._id}`, messageData);
-
-    // Replace optimistic message with real one
+    // Instantly show it in UI
     set((state) => ({
-      messages: state.messages.map((msg) =>
-        msg._id === tempId ? res.data : msg
-      ),
-    }));
-  } catch (error: any) {
-    // Remove optimistic message on failure
-    set((state) => ({
-      messages: state.messages.filter((msg) => msg._id !== tempId),
+      messages: [...state.messages, optimisticMessage],
     }));
 
-    toast.error(error.response?.data?.message || "Something went wrong");
-  }
-},
+    try {
+      const res = await api.post(`/send/${selectedUser._id}`, messageData);
 
+      // Replace optimistic message with real one
+      set((state) => ({
+        messages: state.messages.map((msg) =>
+          msg._id === tempId ? res.data : msg
+        ),
+      }));
+    } catch (error: any) {
+      // Remove optimistic message on failure
+      set((state) => ({
+        messages: state.messages.filter((msg) => msg._id !== tempId),
+      }));
+
+      toast.error(error.response?.data?.message || "Something went wrong");
+    }
+  },
+
+  subscribeToMessages: () => {
+    const { selectedUser, isSoundEnabled } = get();
+    if (!selectedUser) return;
+
+    const socket = useAuthStore.getState().socket;
+
+    socket.on("newMessage", (newMessage: any) => {
+
+      const isMessageSentFromSelectedUser =
+        newMessage.senderId === selectedUser._id;
+      if (!isMessageSentFromSelectedUser) return;
+      
+      const currentMessages = get().messages;
+      set({ messages: [...currentMessages, newMessage] });
+      if (isSoundEnabled) {
+        const notificationSound = new Audio(notification);
+
+        notificationSound.currentTime = 0;
+        notificationSound
+          .play()
+          .catch((e) => console.log("Audio play failed:", e));
+      }
+    });
+  },
+
+  unsubscribeFromMessages: () => {
+    const socket = useAuthStore.getState().socket;
+    socket.off("newMessage");
+  },
 }));
