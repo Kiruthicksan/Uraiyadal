@@ -3,6 +3,7 @@ import User from "../model/userModel.js";
 import type { AuthenticatedRequest } from "../middlewares/protect.js";
 import Message from "../model/messageModel.js";
 import cloudinary from "../config/cloudinary.js";
+import { getReceiverSocketId, io } from "../utils/socket.js";
 
 // ---------------- endpoint for getting all contacts
 export const getAllContacts = async (
@@ -15,7 +16,6 @@ export const getAllContacts = async (
       "-password"
     );
 
-   
     res
       .status(200)
       .json({ message: "Contacts fetched Successfully", contacts });
@@ -129,6 +129,11 @@ export const sendMessage = async (req: AuthenticatedRequest, res: Response) => {
       text,
       image: imageUrl,
     });
+
+    const receiverSocketId = getReceiverSocketId(receiverId);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newMessage", newMessage);
+    }
 
     res.status(201).json(newMessage);
   } catch (error) {

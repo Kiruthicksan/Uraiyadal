@@ -35,6 +35,10 @@ const io = new Server<
 
 io.use(socketAuthMiddlwarre);
 
+export function getReceiverSocketId(userId: any) {
+  return userSocketMap[userId];
+}
+
 // for storing online users --
 const userSocketMap: Record<string, string> = {};
 
@@ -54,4 +58,4 @@ io.on("connection", (socket) => {
   });
 });
 
-export {io, app ,server}
+export { io, app, server };
